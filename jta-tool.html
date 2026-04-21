@@ -941,18 +941,26 @@
           if (match && match[1]) filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
         }
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        if (blob.size === 0) {
+          alert('The server returned an empty file. Please try again.');
+          return;
+        }
+        const excelBlob = new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(excelBlob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+          a.remove();
+        }, 1000);
       } else {
         const errorText = await response.text();
-        alert(`Error generating Excel file (HTTP ${response.status}): ${errorText.substring(0, 200)}...`);
+        const shortError = errorText.length > 200 ? errorText.substring(0, 200) + '…' : errorText;
+        alert(`Error generating Excel file (HTTP ${response.status}): ${shortError}`);
       }
     } catch (error) {
       console.error('Download error:', error);
