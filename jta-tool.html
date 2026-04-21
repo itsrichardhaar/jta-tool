@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JTA AI Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --light-blue: #e8eff5;
+    --dark-blue: #11304b;
+    --mid-blue: #064983;
+    --gold: #dfaa00;
+    --white: #ffffff;
+    --charcoal: #3f3f3f;
+    --border: #c3c3c3;
+    --shadow: 0px 2px 4px rgba(0,0,0,0.10), 0px 8px 8px rgba(0,0,0,0.09), 0px 18px 11px rgba(0,0,0,0.05), 0px 32px 13px rgba(0,0,0,0.01), 0px 50px 14px rgba(0,0,0,0);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--light-blue);
+    color: var(--charcoal);
+    min-height: 100vh;
+  }
+
+  /* ── HERO SECTION ── */
+  .hero-section {
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--light-blue) 100%), var(--light-blue);
+    padding: 72px 40px 48px;
+  }
+  .hero-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    gap: 42px;
+    align-items: center;
+  }
+  .hero-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(40px, 6vw, 92px);
+    line-height: 1.2;
+    color: var(--dark-blue);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .hero-title strong { font-weight: 700; }
+  .hero-title span { font-weight: 500; }
+  .hero-divider {
+    width: 2px;
+    height: clamp(60px, 7vw, 111px);
+    background: var(--dark-blue);
+    flex-shrink: 0;
+  }
+  .hero-desc {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(18px, 2vw, 38px);
+    font-weight: 700;
+    color: var(--dark-blue);
+    line-height: 1.2;
+  }
+
+  /* ── CHAT SECTION ── */
+  .chat-section {
+    padding: 0 40px 72px;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--light-blue) 100%), var(--light-blue);
+  }
+  .chat-card {
+    max-width: 1300px;
+    margin: 0 auto;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 32px;
+    box-shadow: var(--shadow);
+    padding: clamp(32px, 5vw, 80px) clamp(24px, 6vw, 120px);
+  }
+  .chat-card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(24px, 3.5vw, 59px);
+    font-weight: 600;
+    color: var(--dark-blue);
+    line-height: 1.2;
+    margin-bottom: 32px;
+  }
+
+  /* Chat window */
+  #chat-window {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    scroll-behavior: smooth;
+    transition: max-height 0.3s ease;
+  }
+  #chat-window.has-messages {
+    max-height: 420px;
+    min-height: 80px;
+  }
+  #chat-window::-webkit-scrollbar { width: 5px; }
+  #chat-window::-webkit-scrollbar-track { background: transparent; }
+  #chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .chat-message {
+    display: flex;
+    gap: 12px;
+    animation: fadeSlideIn 0.3s ease;
+  }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .chat-message.user-message { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .assistant-message .avatar { background: var(--dark-blue); color: var(--gold); border: 2px solid var(--gold); }
+  .user-message .avatar { background: var(--gold); color: var(--dark-blue); }
+
+  .bubble {
+    max-width: 75%;
+    padding: 14px 20px;
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+  .assistant-message .bubble {
+    background: var(--light-blue);
+    color: var(--charcoal);
+    border-radius: 4px 14px 14px 14px;
+    border-left: 3px solid var(--gold);
+  }
+  .user-message .bubble {
+    background: var(--dark-blue);
+    color: var(--white);
+    border-radius: 14px 4px 14px 14px;
+  }
+  .system-message { justify-content: center; }
+  .system-message .bubble {
+    background: transparent;
+    color: rgba(63,63,63,0.5);
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 4px 0;
+    border: none;
+    max-width: 100%;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 14px 18px;
+  }
+  .typing-indicator span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(63,63,63,0.4);
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); background: var(--gold); }
+  }
+
+  /* ── Pill Input ── */
+  .input-pill {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 132px;
+    padding: 12px 12px 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  #message-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 1.3vw, 24px);
+    font-weight: 500;
+    color: var(--charcoal);
+    background: transparent;
+    resize: none;
+    min-height: 0px;
+    max-height: 120px;
+    line-height: 1.5;
+  }
+  #message-input::placeholder { color: rgba(63,63,63,0.5); }
+  #send-button {
+    width: 60px; height: 60px;
+    border-radius: 60px;
+    background: var(--gold);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  #send-button:hover { opacity: 0.85; transform: scale(1.05); }
+  #send-button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  #send-button svg { width: 28px; height: 28px; }
+
+  /* ── Download strip ── */
+  .download-strip {
+    max-width: 1300px;
+    margin: 24px auto 0;
+    background: var(--dark-blue);
+    border-radius: 24px;
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: var(--shadow);
+  }
+  .download-strip-text h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(20px, 2vw, 32px);
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+  .download-strip-text p {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.6);
+    max-width: 500px;
+    line-height: 1.5;
+  }
+  #excel-button {
+    background: var(--gold);
+    color: var(--dark-blue);
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  #excel-button:hover { opacity: 0.85; transform: translateY(-1px); }
+  #excel-button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* ── CONTENT SECTION ── */
+  .content-section {
+    padding: 0 40px 120px;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--light-blue) 100%), var(--light-blue);
+    display: flex;
+    flex-direction: column;
+    gap: 90px;
+    align-items: center;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-it-works {
+    max-width: 1300px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(30px, 4vw, 59px);
+    font-weight: 600;
+    color: var(--dark-blue);
+    line-height: 1.2;
+  }
+  .section-divider {
+    height: 2px;
+    background: var(--border);
+    width: 100%;
+  }
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .step-card {
+    background: var(--white);
+    border-radius: 32px;
+    padding: 32px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .step-icon {
+    width: 80px; height: 80px;
+  }
+  .step-icon img { width: 100%; height: 100%; object-fit: contain; }
+  .step-heading {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(20px, 2.2vw, 38px);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .step-heading .step-num { color: var(--gold); }
+  .step-heading .step-name { color: var(--charcoal); display: block; }
+  .step-bullets {
+    list-style: disc;
+    padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .step-bullets li {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(13px, 1.3vw, 24px);
+    color: var(--charcoal);
+    line-height: 1.4;
+  }
+
+  /* ── TIPS ── */
+  .tips-row {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    padding-top: 16px;
+    justify-content: center;
+  }
+  .tips-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(20px, 2.2vw, 38px);
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.2;
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+  .tips-list {
+    list-style: disc;
+    padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tips-list li {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(13px, 1.3vw, 24px);
+    color: var(--charcoal);
+    line-height: 1.4;
+  }
+
+  /* ── FAQ ── */
+  .faq-section {
+    max-width: 1300px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .faq-question {
+    background: var(--mid-blue);
+    color: var(--white);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 1.3vw, 24px);
+    font-weight: 500;
+    line-height: 1.3;
+    border-radius: 8px;
+    transition: border-radius 0.15s;
+  }
+  .faq-question.open { border-radius: 8px 8px 0 0; }
+  .faq-question span { flex: 1; }
+  .faq-toggle {
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+    position: relative;
+    transition: transform 0.3s;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+  .faq-toggle::before,
+  .faq-toggle::after {
+    content: '';
+    position: absolute;
+    background: var(--dark-blue);
+    border-radius: 3px;
+  }
+  .faq-toggle::before { width: 2px; height: 14px; top: 11px; left: 17px; }
+  .faq-toggle::after  { width: 14px; height: 2px; top: 17px; left: 11px; }
+  .faq-toggle.open { transform: rotate(45deg); }
+  .faq-answer {
+    background: var(--white);
+    overflow: hidden;
+    max-height: 0;
+    padding: 0 32px;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    border-radius: 0 0 8px 8px;
+  }
+  .faq-answer.open {
+    max-height: 400px;
+    padding: 24px 32px;
+  }
+  .faq-answer p {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(13px, 1.3vw, 24px);
+    font-weight: 400;
+    color: var(--dark-blue);
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER CTA ── */
+  .footer-cta {
+    background: var(--dark-blue);
+    padding: 60px clamp(24px, 8vw, 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: nowrap;
+  }
+  .footer-cta-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(22px, 3vw, 36px);
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .contact-btn {
+    background: var(--gold);
+    color: var(--dark-blue);
+    border: none;
+    border-radius: 60px;
+    padding: 12px 24px;
+    height: 60px;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 1.3vw, 24px);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .contact-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .contact-btn img { width: 28px; height: 28px; object-fit: contain; }
+
+  /* ── Spinner ── */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .spinner.dark {
+    border-color: rgba(17,48,75,0.25);
+    border-top-color: var(--dark-blue);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Responsive ── */
+  @media (max-width: 960px) {
+    .steps-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .hero-inner { flex-direction: column; gap: 16px; }
+    .hero-title { white-space: normal; }
+    .hero-divider { width: 100%; height: 2px; }
+    .hero-section, .chat-section, .content-section { padding-left: 16px; padding-right: 16px; }
+    .download-strip { flex-direction: column; align-items: flex-start; }
+    .footer-cta { flex-wrap: wrap; gap: 24px; justify-content: center; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero-section">
+  <div class="hero-inner">
+    <h1 class="hero-title"><strong>JTA AI</strong> <span>Tool</span></h1>
+    <div class="hero-divider"></div>
+    <p class="hero-desc">AI-supported Job Task Analysis identifies the necessary knowledge, skills, and abilities to align curriculum with workforce needs</p>
+  </div>
+</div>
+
+<!-- CHAT SECTION -->
+<div class="chat-section">
+  <div class="chat-card">
+    <h2 class="chat-card-title">Start Your Job Task Analysis</h2>
+
+    <div id="chat-window">
+      <!-- messages injected here by JS -->
+    </div>
+
+    <div class="input-pill">
+      <textarea
+        id="message-input"
+        rows="1"
+        placeholder="Enter an occupation or job title (e.g., Wind Turbine Technician, Water Operator I)"
+      ></textarea>
+      <button id="send-button" title="Send message">
+        <img src="https://www.figma.com/api/mcp/asset/45b49add-3eea-40d9-bfb1-f60df94ff066" alt="Send" style="width:28px;height:28px;object-fit:contain;" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Download Report -->
+  <div class="download-strip">
+    <div class="download-strip-text">
+      <h3>Generate Final Report</h3>
+      <p>When your conversation is complete and the occupation is clearly defined, click the button to generate and download your structured JTA report as an Excel file.</p>
+    </div>
+    <button id="excel-button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      Generate &amp; Download Excel
+    </button>
+  </div>
+</div>
+
+<!-- CONTENT SECTION -->
+<div class="content-section">
+
+  <!-- HOW IT WORKS -->
+  <div class="how-it-works">
+    <h2 class="section-title">How it Works</h2>
+    <div class="section-divider"></div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-icon">
+          <img src="https://www.figma.com/api/mcp/asset/5a715466-f7a0-4e7e-8542-54b38884e3e9" alt="Person icon" />
+        </div>
+        <div>
+          <div class="step-heading">
+            <span class="step-num">Step 1: </span>
+            <span class="step-name">Define the Role</span>
+          </div>
+          <ul class="step-bullets" style="margin-top:16px;">
+            <li>Enter occupation or job title</li>
+            <li>Answer clarifying questions</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">
+          <img src="https://www.figma.com/api/mcp/asset/7c8a35a5-4278-48e0-8d46-ddb1715a54d2" alt="Arrows icon" />
+        </div>
+        <div>
+          <div class="step-heading">
+            <span class="step-num">Step 2: </span>
+            <span class="step-name">Review &amp; Refine</span>
+          </div>
+          <ul class="step-bullets" style="margin-top:16px;">
+            <li>Review generated tasks</li>
+            <li>Edit and refine knowledge, skills, and abilities (KSAs)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">
+          <img src="https://www.figma.com/api/mcp/asset/fc73cee0-6453-47e2-b6d9-b2cb802456c0" alt="Group icon" />
+        </div>
+        <div>
+          <div class="step-heading">
+            <span class="step-num">Step 3: </span>
+            <span class="step-name">Validate &amp; Finalize</span>
+          </div>
+          <ul class="step-bullets" style="margin-top:16px;">
+            <li>Conduct final review</li>
+            <li>Export your draft Job Task Analysis</li>
+            <li>Share with industry partners or SMEs for validation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tips-row">
+      <span class="tips-label">Tips</span>
+      <ul class="tips-list">
+        <li>Provide a clear, specific job title</li>
+        <li>Ask the tool to emphasize particular skill areas if needed</li>
+        <li>Refine individual KSAs by referencing their number</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <div class="section-divider"></div>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>What is a Job Task Analysis?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>A Job Task Analysis (JTA) is a systematic process used to identify and document the specific tasks, knowledge, skills, and abilities required to perform a job effectively. It is commonly used in workforce development, education, and credentialing to ensure training, curricula, and assessments are aligned with real-world job requirements.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Is this tool a replacement for a traditional JTA workshop?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>No. This tool generates a structured draft Job Task Analysis based on your inputs. It is designed to accelerate the process and provide a starting point that can be reviewed and refined with industry subject matter experts.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>How accurate are the generated tasks and KSAs?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>The quality of the output depends on the specificity of your inputs. The tool organizes tasks and knowledge, skills, and abilities based on structured prompts, but all outputs should be reviewed and validated with industry partners before final use.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Can I edit or refine the results?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>Yes. You can refine the generated tasks and KSAs within the tool. You can ask it to emphasize specific technical areas or revise individual KSAs by referencing their number.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>What types of programs is this tool designed for?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>The tool is designed for two-year technician programs, NSF ATE projects, and workforce-aligned curriculum development initiatives. It can be used across a wide range of technical and applied fields.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>How long does it take to generate a draft JTA?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>Most users can generate an initial draft within minutes. Additional time may be needed to refine and validate the results with faculty and industry partners.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Can I export the results?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>Yes. Once you have reviewed and refined your draft, you can export the Job Task Analysis for sharing, further editing, or use in grant proposals and curriculum documentation.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>What if my occupation is very specialized or emerging?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>You can still use the tool. Provide as much context as possible when defining the role. The tool works best when given specific industry focus areas, technologies, or work settings to consider.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Can this tool help update an existing curriculum rather than build one from scratch?</span>
+          <div class="faq-toggle"></div>
+        </button>
+        <div class="faq-answer">
+          <p>Yes. Many users begin with an existing program and use the tool to identify gaps, outdated skills, or emerging workforce needs that should be incorporated.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER CTA -->
+<footer class="footer-cta">
+  <p class="footer-cta-text">Interested in implementing your own JTA AI tool?</p>
+  <a href="#" class="contact-btn">Contact Us</a>
+</footer>
+
+<script>
+  // ── FAQ Accordion ──
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const toggle = btn.querySelector('.faq-toggle');
+    const isOpen = answer.classList.contains('open');
+
+    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.classList.remove('open');
+      q.querySelector('.faq-toggle').classList.remove('open');
+    });
+
+    if (!isOpen) {
+      answer.classList.add('open');
+      btn.classList.add('open');
+      toggle.classList.add('open');
+    }
+  }
+
+  // ── API / Chat Logic ──
+  const API_BASE_URL = 'https://earthcenterportal.azurewebsites.net/api/Jta';
+  const STORAGE_KEY_SESSION = 'jta_session_id';
+  const STORAGE_KEY_HISTORY = 'jta_chat_history';
+
+  const chatWindow = document.getElementById('chat-window');
+  const messageInput = document.getElementById('message-input');
+  const sendButton = document.getElementById('send-button');
+  const excelButton = document.getElementById('excel-button');
+
+  let history = [];
+
+  function getSessionId() {
+    let sessionId = localStorage.getItem(STORAGE_KEY_SESSION);
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem(STORAGE_KEY_SESSION, sessionId);
+    }
+    return sessionId;
+  }
+
+  function loadLocalHistory() {
+    const json = localStorage.getItem(STORAGE_KEY_HISTORY);
+    return json ? JSON.parse(json) : [];
+  }
+
+  function saveLocalHistory(hist) {
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(hist));
+  }
+
+  function appendMessage(role, content, skipSave = false) {
+    const messageContent = content || '';
+
+    chatWindow.classList.add('has-messages');
+
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('chat-message');
+
+    if (role === 'user') {
+      msgDiv.classList.add('user-message');
+      msgDiv.innerHTML = `
+        <div class="avatar">You</div>
+        <div class="bubble">${messageContent.replace(/\n/g, '<br>')}</div>
+      `;
+    } else if (role === 'system') {
+      msgDiv.classList.add('system-message');
+      msgDiv.innerHTML = `<div class="bubble">${messageContent}</div>`;
+    } else {
+      msgDiv.classList.add('assistant-message');
+      msgDiv.innerHTML = `
+        <div class="avatar">JTA</div>
+        <div class="bubble">${messageContent.replace(/\n/g, '<br>')}</div>
+      `;
+    }
+
+    chatWindow.appendChild(msgDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    if (!skipSave && role !== 'system') {
+      history = loadLocalHistory();
+      history.push({ Role: role, Content: messageContent });
+      saveLocalHistory(history);
+    }
+  }
+
+  function showTyping() {
+    const el = document.createElement('div');
+    el.classList.add('chat-message', 'assistant-message');
+    el.id = 'typing-indicator';
+    el.innerHTML = `
+      <div class="avatar">JTA</div>
+      <div class="bubble typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    `;
+    chatWindow.classList.add('has-messages');
+    chatWindow.appendChild(el);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function setLoading(buttonId, loading) {
+    const btn = document.getElementById(buttonId);
+    if (buttonId === 'send-button') {
+      btn.disabled = loading;
+      btn.innerHTML = loading
+        ? `<div class="spinner dark"></div>`
+        : `<img src="https://www.figma.com/api/mcp/asset/45b49add-3eea-40d9-bfb1-f60df94ff066" alt="Send" style="width:28px;height:28px;object-fit:contain;" />`;
+    } else {
+      btn.disabled = loading;
+      btn.innerHTML = loading
+        ? `<div class="spinner dark"></div> Generating&hellip;`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> Generate &amp; Download Excel`;
+    }
+  }
+
+  async function initializeChat() {
+    getSessionId();
+    history = loadLocalHistory();
+    if (history.length > 0) {
+      history.forEach(msg => appendMessage(msg.Role, msg.Content, true));
+    } else {
+      await sendInitialMessage();
+    }
+  }
+
+  async function sendInitialMessage() {
+    const initialMsg = 'Hello, please start the conversation about selecting a career for JTA development.';
+    appendMessage('user', initialMsg, false);
+    showTyping();
+    setLoading('send-button', true);
+    try {
+      const currentHistory = loadLocalHistory();
+      const requestBody = JSON.stringify({ ChatHistory: currentHistory });
+      const response = await fetch(`${API_BASE_URL}/SendChatMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody
+      });
+      removeTyping();
+      if (response.ok) {
+        const data = await response.json();
+        appendMessage('assistant', data.assistantResponse || 'The assistant is starting up…', false);
+      } else {
+        appendMessage('system', 'Error starting conversation. Please refresh and try again.', true);
+      }
+    } catch (error) {
+      removeTyping();
+      appendMessage('system', 'Network error during initial connection. Please check your connection.', true);
+      console.error('Initial API Error:', error);
+    } finally {
+      setLoading('send-button', false);
+    }
+  }
+
+  async function handleSendMessage() {
+    const userMessage = messageInput.value.trim();
+    if (!userMessage) return;
+    appendMessage('user', userMessage, false);
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+    showTyping();
+    setLoading('send-button', true);
+    try {
+      const updatedHistory = loadLocalHistory();
+      const requestBody = JSON.stringify({ ChatHistory: updatedHistory });
+      const response = await fetch(`${API_BASE_URL}/SendChatMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody
+      });
+      removeTyping();
+      if (response.ok) {
+        const data = await response.json();
+        appendMessage('assistant', data.assistantResponse || 'No response received from assistant.', false);
+      } else {
+        const errorText = await response.text();
+        appendMessage('system', `Error: Could not get assistant response. Status ${response.status}.`, true);
+        console.error('API Error:', errorText);
+      }
+    } catch (error) {
+      removeTyping();
+      appendMessage('system', 'Network error. Could not reach the API.', true);
+      console.error('Error during chat:', error);
+    } finally {
+      setLoading('send-button', false);
+    }
+  }
+
+  async function handleExcelGenerate() {
+    const currentHistory = loadLocalHistory();
+    if (currentHistory.length === 0) {
+      alert('Please start a conversation first to define the occupation before generating the report.');
+      return;
+    }
+    setLoading('excel-button', true);
+    try {
+      const requestBody = JSON.stringify({ ChatHistory: currentHistory });
+      const response = await fetch(`${API_BASE_URL}/GenerateJtaExcel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody
+      });
+      if (response.ok) {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'JTA_Export.xlsx';
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/i);
+          if (match && match[1]) filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      } else {
+        const errorText = await response.text();
+        alert(`Error generating Excel file (HTTP ${response.status}): ${errorText.substring(0, 200)}...`);
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('A network error occurred while attempting to download the file.');
+    } finally {
+      setLoading('excel-button', false);
+    }
+  }
+
+  // ── Auto-resize textarea ──
+  messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  // ── Event Listeners ──
+  document.addEventListener('DOMContentLoaded', () => {
+    sendButton.addEventListener('click', handleSendMessage);
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+      }
+    });
+    excelButton.addEventListener('click', handleExcelGenerate);
+    initializeChat();
+  });
+</script>
+</body>
+</html>
