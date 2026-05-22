@@ -1025,10 +1025,9 @@
   const INACTIVITY_WARN_MS  = 1 * 60 * 1000; // 1 min → show warning (testing)
   const INACTIVITY_CLEAR_MS = 60 * 1000;       // 60 sec after warning → clear
 
-  let inactivityTimer  = null;
-  let clearTimer       = null;
-  const modalOverlay   = document.getElementById('session-modal-overlay');
-  const continueBtn    = document.getElementById('session-continue-btn');
+  let inactivityTimer = null;
+  let clearTimer      = null;
+  let modalOverlay    = null;
 
   function clearSession() {
     localStorage.removeItem(STORAGE_KEY_HISTORY);
@@ -1039,25 +1038,20 @@
   }
 
   function showSessionModal() {
-    modalOverlay.classList.add('visible');
+    if (modalOverlay) modalOverlay.classList.add('visible');
     clearTimer = setTimeout(clearSession, INACTIVITY_CLEAR_MS);
   }
 
   function hideSessionModal() {
-    modalOverlay.classList.remove('visible');
+    if (modalOverlay) modalOverlay.classList.remove('visible');
     if (clearTimer) { clearTimeout(clearTimer); clearTimer = null; }
   }
 
   function resetInactivityTimer() {
-    if (modalOverlay.classList.contains('visible')) return;
+    if (modalOverlay && modalOverlay.classList.contains('visible')) return;
     if (inactivityTimer) clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(showSessionModal, INACTIVITY_WARN_MS);
   }
-
-  continueBtn.addEventListener('click', () => {
-    hideSessionModal();
-    resetInactivityTimer();
-  });
 
   ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'].forEach(evt =>
     document.addEventListener(evt, resetInactivityTimer, { passive: true })
@@ -1068,6 +1062,13 @@
 
   // ── Event Listeners ──
   document.addEventListener('DOMContentLoaded', () => {
+    modalOverlay = document.getElementById('session-modal-overlay');
+    const continueBtn = document.getElementById('session-continue-btn');
+    continueBtn.addEventListener('click', () => {
+      hideSessionModal();
+      resetInactivityTimer();
+    });
+
     sendButton.addEventListener('click', handleSendMessage);
     messageInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
