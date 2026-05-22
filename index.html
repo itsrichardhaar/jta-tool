@@ -851,37 +851,6 @@
     history = loadLocalHistory();
     if (history.length > 0) {
       history.forEach(msg => appendMessage(msg.Role, msg.Content, true));
-    } else {
-      await sendInitialMessage();
-    }
-  }
-
-  async function sendInitialMessage() {
-    const initialMsg = 'Hello, please start the conversation about selecting a career for JTA development.';
-    appendMessage('user', initialMsg, false);
-    showTyping();
-    setLoading('send-button', true);
-    try {
-      const currentHistory = loadLocalHistory();
-      const requestBody = JSON.stringify({ ChatHistory: currentHistory });
-      const response = await fetch(`${API_BASE_URL}/SendChatMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: requestBody
-      });
-      removeTyping();
-      if (response.ok) {
-        const data = await response.json();
-        appendMessage('assistant', data.assistantResponse || 'The assistant is starting up…', false);
-      } else {
-        appendMessage('system', 'Error starting conversation. Please refresh and try again.', true);
-      }
-    } catch (error) {
-      removeTyping();
-      appendMessage('system', 'Network error during initial connection. Please check your connection.', true);
-      console.error('Initial API Error:', error);
-    } finally {
-      setLoading('send-button', false);
     }
   }
 
