@@ -1034,6 +1034,7 @@
     localStorage.removeItem(STORAGE_KEY_SESSION);
     history = [];
     chatWindow.innerHTML = '';
+    chatWindow.classList.remove('has-messages');
     hideSessionModal();
   }
 
