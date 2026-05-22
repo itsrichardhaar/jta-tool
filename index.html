@@ -308,8 +308,8 @@
   }
   .step-icon {
     width: 80px; height: 80px;
+    flex-shrink: 0;
   }
-  .step-icon img { width: 100%; height: 100%; object-fit: contain; }
   .step-heading {
     font-family: 'Rajdhani', sans-serif;
     font-size: clamp(20px, 2.2vw, 38px);
@@ -593,7 +593,9 @@
         placeholder="Enter an occupation or job title (e.g., Wind Turbine Technician, Water Operator I)"
       ></textarea>
       <button id="send-button" title="Send message">
-        <img src="https://www.figma.com/api/mcp/asset/45b49add-3eea-40d9-bfb1-f60df94ff066" alt="Send" style="width:28px;height:28px;object-fit:contain;" />
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke="#11304b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
     </div>
   </div>
@@ -625,7 +627,10 @@
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-icon">
-          <img src="https://www.figma.com/api/mcp/asset/5a715466-f7a0-4e7e-8542-54b38884e3e9" alt="Person icon" />
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+            <circle cx="40" cy="28" r="14" stroke="#11304b" stroke-width="3"/>
+            <path d="M14 70c0-14.359 11.641-26 26-26s26 11.641 26 26" stroke="#dfaa00" stroke-width="3" stroke-linecap="round"/>
+          </svg>
         </div>
         <div>
           <div class="step-heading">
@@ -640,7 +645,12 @@
       </div>
       <div class="step-card">
         <div class="step-icon">
-          <img src="https://www.figma.com/api/mcp/asset/7c8a35a5-4278-48e0-8d46-ddb1715a54d2" alt="Arrows icon" />
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+            <path d="M14 40C14 25.64 25.64 14 40 14c7.8 0 14.8 3.4 19.6 8.8" stroke="#11304b" stroke-width="3" stroke-linecap="round"/>
+            <path d="M58 14l2 10-10 2" stroke="#11304b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M66 40c0 14.36-11.64 26-26 26-7.8 0-14.8-3.4-19.6-8.8" stroke="#dfaa00" stroke-width="3" stroke-linecap="round"/>
+            <path d="M22 66l-2-10 10-2" stroke="#dfaa00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
         <div>
           <div class="step-heading">
@@ -655,7 +665,10 @@
       </div>
       <div class="step-card">
         <div class="step-icon">
-          <img src="https://www.figma.com/api/mcp/asset/fc73cee0-6453-47e2-b6d9-b2cb802456c0" alt="Group icon" />
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+            <circle cx="40" cy="40" r="26" stroke="#11304b" stroke-width="3"/>
+            <path d="M26 40l10 10 18-20" stroke="#dfaa00" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
         <div>
           <div class="step-heading">
@@ -900,7 +913,7 @@
       btn.disabled = loading;
       btn.innerHTML = loading
         ? `<div class="spinner dark"></div>`
-        : `<img src="https://www.figma.com/api/mcp/asset/45b49add-3eea-40d9-bfb1-f60df94ff066" alt="Send" style="width:28px;height:28px;object-fit:contain;" />`;
+        : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="#11304b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     } else {
       btn.disabled = loading;
       btn.innerHTML = loading
