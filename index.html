@@ -922,11 +922,14 @@
     }
   }
 
+  const INPUT_PLACEHOLDER = messageInput.getAttribute('placeholder');
+
   async function initializeChat() {
     getSessionId();
     history = loadLocalHistory();
     if (history.length > 0) {
       history.forEach(msg => appendMessage(msg.Role, msg.Content, true));
+      messageInput.removeAttribute('placeholder');
     }
   }
 
@@ -934,6 +937,7 @@
     const userMessage = messageInput.value.trim();
     if (!userMessage) return;
     appendMessage('user', userMessage, false);
+    messageInput.removeAttribute('placeholder');
     messageInput.value = '';
     messageInput.style.height = 'auto';
     showTyping();
@@ -1033,6 +1037,7 @@
     history = [];
     chatWindow.innerHTML = '';
     chatWindow.classList.remove('has-messages');
+    messageInput.setAttribute('placeholder', INPUT_PLACEHOLDER);
     hideSessionModal();
   }
 
