@@ -1022,12 +1022,10 @@
   });
 
   // ── Session Expiry ──
-  const INACTIVITY_WARN_MS  = 1 * 60 * 1000; // 1 min → show warning (testing)
-  const INACTIVITY_CLEAR_MS = 60 * 1000;       // 60 sec after warning → clear
+  const SESSION_CLEAR_MS = 60 * 1000; // 60 sec after warning → clear
 
-  let inactivityTimer = null;
-  let clearTimer      = null;
-  let modalOverlay    = null;
+  let clearTimer   = null;
+  let modalOverlay = null;
 
   function clearSession() {
     localStorage.removeItem(STORAGE_KEY_HISTORY);
@@ -1039,8 +1037,9 @@
   }
 
   function showSessionModal() {
-    if (modalOverlay) modalOverlay.classList.add('visible');
-    clearTimer = setTimeout(clearSession, INACTIVITY_CLEAR_MS);
+    if (!modalOverlay || modalOverlay.classList.contains('visible')) return;
+    modalOverlay.classList.add('visible');
+    clearTimer = setTimeout(clearSession, SESSION_CLEAR_MS);
   }
 
   function hideSessionModal() {
@@ -1048,15 +1047,17 @@
     if (clearTimer) { clearTimeout(clearTimer); clearTimer = null; }
   }
 
-  function resetInactivityTimer() {
-    if (modalOverlay && modalOverlay.classList.contains('visible')) return;
-    if (inactivityTimer) clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(showSessionModal, INACTIVITY_WARN_MS);
-  }
+  // Show modal when user switches tabs/windows
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) showSessionModal();
+  });
 
-  ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'].forEach(evt =>
-    document.addEventListener(evt, resetInactivityTimer, { passive: true })
-  );
+  // Native browser confirmation when user tries to close/navigate away
+  window.addEventListener('beforeunload', (e) => {
+    showSessionModal();
+    e.preventDefault();
+    e.returnValue = '';
+  });
 
   // Clear session silently when user leaves the page
   window.addEventListener('pagehide', clearSession);
@@ -1065,10 +1066,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     modalOverlay = document.getElementById('session-modal-overlay');
     const continueBtn = document.getElementById('session-continue-btn');
-    continueBtn.addEventListener('click', () => {
-      hideSessionModal();
-      resetInactivityTimer();
-    });
+    continueBtn.addEventListener('click', hideSessionModal);
 
     sendButton.addEventListener('click', handleSendMessage);
     messageInput.addEventListener('keydown', (e) => {
@@ -1079,7 +1077,6 @@
     });
     excelButton.addEventListener('click', handleExcelGenerate);
     initializeChat();
-    resetInactivityTimer();
   });
 </script>
 
@@ -1092,7 +1089,7 @@
       </svg>
     </div>
     <h2 id="modal-title">Your session will expire soon</h2>
-    <p>Due to inactivity, your session is about to end and your progress will be lost. Continue to keep your session active.</p>
+    <p>Due to inactivity or navigating away, your session is about to end and your progress will be lost. Continue to keep your session active.</p>
     <button class="modal-btn" id="session-continue-btn">Continue Session</button>
   </div>
 </div>
