@@ -602,8 +602,8 @@ $jta_feedback_questions = [
     background: var(--white);
     border-radius: 16px;
     box-shadow: var(--shadow);
-    padding: 40px 44px 32px;
-    max-width: 640px;
+    padding: 40px 44px 28px;
+    max-width: 520px;
     width: 100%;
     max-height: calc(100vh - 48px);
     overflow-y: auto;
@@ -618,10 +618,10 @@ $jta_feedback_questions = [
   }
   #feedback-modal .feedback-subtitle {
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--charcoal);
     line-height: 1.5;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
   #feedback-modal .feedback-close {
     position: absolute;
@@ -640,17 +640,59 @@ $jta_feedback_questions = [
   }
   #feedback-modal .feedback-close:hover { background: var(--light-blue); }
 
-  .feedback-question {
+  /* Progress */
+  .feedback-progress {
+    margin-bottom: 20px;
+  }
+  .feedback-progress-text {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: rgba(17,48,75,0.55);
+    margin-bottom: 8px;
+  }
+  .feedback-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--light-blue);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .feedback-progress-fill {
+    height: 100%;
+    width: 0;
+    background: var(--gold);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  /* Steps */
+  .feedback-step {
     border: none;
     padding: 0;
-    margin: 0 0 24px;
+    margin: 0;
+    display: none;
+    min-height: 168px;
   }
+  .feedback-step.active {
+    display: block;
+    animation: feedbackStepIn 0.25s ease;
+  }
+  @keyframes feedbackStepIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   .feedback-question-text {
+    display: block;
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--dark-blue);
-    margin-bottom: 12px;
+    margin-bottom: 18px;
     line-height: 1.4;
     padding: 0;
   }
@@ -671,8 +713,8 @@ $jta_feedback_questions = [
   .rating-option input[type="radio"] {
     appearance: none;
     -webkit-appearance: none;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border: 2px solid var(--border);
     border-radius: 50%;
     margin: 0;
@@ -698,7 +740,7 @@ $jta_feedback_questions = [
   .rating-anchors {
     display: flex;
     justify-content: space-between;
-    margin-top: 6px;
+    margin-top: 8px;
     font-family: 'Inter', sans-serif;
     font-size: 11px;
     font-weight: 500;
@@ -706,19 +748,9 @@ $jta_feedback_questions = [
     letter-spacing: 0.2px;
   }
 
-  .feedback-open-question { margin: 28px 0 24px; }
-  .feedback-open-question label {
-    display: block;
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--dark-blue);
-    margin-bottom: 10px;
-    line-height: 1.4;
-  }
   #feedback-open-response {
     width: 100%;
-    min-height: 88px;
+    min-height: 110px;
     padding: 12px 14px;
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -736,42 +768,81 @@ $jta_feedback_questions = [
   }
   #feedback-open-response::placeholder { color: rgba(63,63,63,0.5); }
 
+  /* Actions */
   .feedback-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 12px;
-    margin-top: 28px;
-    padding-top: 20px;
+    margin-top: 24px;
+    padding-top: 18px;
     border-top: 1px solid var(--border);
+  }
+  .feedback-actions-right {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
   }
   .feedback-actions button {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 600;
-    padding: 12px 24px;
+    padding: 11px 24px;
     border-radius: 50px;
     border: none;
     cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s, background 0.2s;
+    transition: opacity 0.2s, transform 0.15s, background 0.2s, color 0.2s;
   }
-  #feedback-skip-btn {
+  #feedback-prev-btn {
     background: transparent;
     color: var(--charcoal);
+    border: 1px solid var(--border);
   }
-  #feedback-skip-btn:hover { background: var(--light-blue); }
+  #feedback-prev-btn:hover { background: var(--light-blue); border-color: var(--dark-blue); }
+  #feedback-next-btn,
   #feedback-submit-btn {
     background: var(--gold);
     color: var(--dark-blue);
   }
-  #feedback-submit-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-  #feedback-submit-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  #feedback-next-btn:hover:not(:disabled),
+  #feedback-submit-btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+  #feedback-next-btn:disabled,
+  #feedback-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  [hidden] { display: none !important; }
+
+  /* Thank-you state */
+  .feedback-thank-you {
+    text-align: center;
+    padding: 24px 8px 8px;
+    animation: feedbackStepIn 0.3s ease;
+  }
+  .feedback-thank-you-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 18px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feedback-thank-you p {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--dark-blue);
+    line-height: 1.3;
+    margin: 0;
+  }
 
   @media (max-width: 560px) {
-    #feedback-modal { padding: 32px 24px 24px; }
+    #feedback-modal { padding: 32px 24px 20px; }
     #feedback-modal h2 { font-size: 22px; }
+    .rating-option input[type="radio"] { width: 28px; height: 28px; }
     .rating-option .rating-number { font-size: 12px; }
     .rating-anchors { font-size: 10px; }
-    .feedback-actions { flex-direction: column-reverse; }
+    .feedback-actions { flex-direction: column-reverse; align-items: stretch; }
+    .feedback-actions-right { flex-direction: column-reverse; margin-left: 0; }
     .feedback-actions button { width: 100%; }
   }
 </style>
@@ -1278,22 +1349,88 @@ $jta_feedback_questions = [
   // Clear session silently when user leaves the page
   window.addEventListener('pagehide', clearSession);
 
-  // Feedback Modal
-  let feedbackOverlay = null;
-  let feedbackForm    = null;
+  // Feedback Modal — step-by-step wizard
+  const FEEDBACK_THANK_YOU_MS = 2200;
+
+  let feedbackOverlay   = null;
+  let feedbackForm      = null;
+  let feedbackThankYou  = null;
+  let feedbackPrevBtn   = null;
+  let feedbackNextBtn   = null;
+  let feedbackSubmitBtn = null;
+  let feedbackSteps     = [];
+  let feedbackCurrentStep = 1;
+  let feedbackThankYouTimer = null;
+
+  function feedbackStepIsValid(stepEl) {
+    if (!stepEl) return false;
+    const radios = stepEl.querySelectorAll('input[type="radio"]');
+    if (radios.length === 0) return true; // open-ended step is optional
+    return Array.from(radios).some(r => r.checked);
+  }
+
+  function feedbackAllRatingsAnswered() {
+    return feedbackSteps.every(step => {
+      const radios = step.querySelectorAll('input[type="radio"]');
+      if (radios.length === 0) return true;
+      return Array.from(radios).some(r => r.checked);
+    });
+  }
+
+  function feedbackGoToStep(step) {
+    if (!feedbackSteps.length) return;
+    feedbackCurrentStep = Math.max(1, Math.min(step, feedbackSteps.length));
+    feedbackSteps.forEach((el, idx) => {
+      el.classList.toggle('active', idx === feedbackCurrentStep - 1);
+    });
+    feedbackUpdateProgress();
+    feedbackUpdateButtons();
+  }
+
+  function feedbackUpdateProgress() {
+    const current = document.getElementById('feedback-step-current');
+    const total   = document.getElementById('feedback-step-total');
+    const fill    = document.getElementById('feedback-progress-fill');
+    if (current) current.textContent = feedbackCurrentStep;
+    if (total)   total.textContent   = feedbackSteps.length;
+    if (fill)    fill.style.width    = (feedbackCurrentStep / feedbackSteps.length * 100) + '%';
+  }
+
+  function feedbackUpdateButtons() {
+    if (!feedbackPrevBtn || !feedbackNextBtn || !feedbackSubmitBtn) return;
+    const isFirst = feedbackCurrentStep === 1;
+    const isLast  = feedbackCurrentStep === feedbackSteps.length;
+    const activeStep = feedbackSteps[feedbackCurrentStep - 1];
+
+    feedbackPrevBtn.hidden   = isFirst;
+    feedbackNextBtn.hidden   = isLast;
+    feedbackSubmitBtn.hidden = !isLast;
+
+    feedbackNextBtn.disabled   = !feedbackStepIsValid(activeStep);
+    feedbackSubmitBtn.disabled = !feedbackAllRatingsAnswered();
+  }
+
+  function feedbackReset() {
+    if (feedbackThankYouTimer) { clearTimeout(feedbackThankYouTimer); feedbackThankYouTimer = null; }
+    if (feedbackForm)     { feedbackForm.reset(); feedbackForm.hidden = false; }
+    if (feedbackThankYou) { feedbackThankYou.hidden = true; }
+    feedbackGoToStep(1);
+  }
 
   function showFeedbackModal() {
     if (!feedbackOverlay) return;
-    if (feedbackForm) feedbackForm.reset();
+    feedbackReset();
     feedbackOverlay.classList.add('visible');
   }
 
   function hideFeedbackModal() {
     if (feedbackOverlay) feedbackOverlay.classList.remove('visible');
+    if (feedbackThankYouTimer) { clearTimeout(feedbackThankYouTimer); feedbackThankYouTimer = null; }
   }
 
   function handleFeedbackSubmit(e) {
     e.preventDefault();
+    if (!feedbackAllRatingsAnswered()) return;
     const formData = new FormData(e.target);
     const feedback = {
       ratings: {},
@@ -1305,7 +1442,10 @@ $jta_feedback_questions = [
     }
     // TODO: POST to feedback endpoint once available (e.g. `${API_BASE_URL}/SubmitFeedback`).
     console.log('JTA feedback submitted:', feedback);
-    hideFeedbackModal();
+
+    if (feedbackForm)     feedbackForm.hidden = true;
+    if (feedbackThankYou) feedbackThankYou.hidden = false;
+    feedbackThankYouTimer = setTimeout(hideFeedbackModal, FEEDBACK_THANK_YOU_MS);
   }
 
   // Event Listeners
@@ -1314,13 +1454,24 @@ $jta_feedback_questions = [
     const continueBtn = document.getElementById('session-continue-btn');
     continueBtn.addEventListener('click', hideSessionModal);
 
-    feedbackOverlay = document.getElementById('feedback-modal-overlay');
-    feedbackForm    = document.getElementById('feedback-form');
-    if (feedbackForm) feedbackForm.addEventListener('submit', handleFeedbackSubmit);
-    const feedbackSkipBtn  = document.getElementById('feedback-skip-btn');
+    feedbackOverlay   = document.getElementById('feedback-modal-overlay');
+    feedbackForm      = document.getElementById('feedback-form');
+    feedbackThankYou  = document.getElementById('feedback-thank-you');
+    feedbackPrevBtn   = document.getElementById('feedback-prev-btn');
+    feedbackNextBtn   = document.getElementById('feedback-next-btn');
+    feedbackSubmitBtn = document.getElementById('feedback-submit-btn');
+    feedbackSteps     = Array.from(document.querySelectorAll('.feedback-step'));
+
+    if (feedbackForm) {
+      feedbackForm.addEventListener('submit', handleFeedbackSubmit);
+      feedbackForm.addEventListener('change', feedbackUpdateButtons);
+    }
+    if (feedbackPrevBtn) feedbackPrevBtn.addEventListener('click', () => feedbackGoToStep(feedbackCurrentStep - 1));
+    if (feedbackNextBtn) feedbackNextBtn.addEventListener('click', () => feedbackGoToStep(feedbackCurrentStep + 1));
     const feedbackCloseBtn = document.getElementById('feedback-close-btn');
-    if (feedbackSkipBtn)  feedbackSkipBtn.addEventListener('click', hideFeedbackModal);
     if (feedbackCloseBtn) feedbackCloseBtn.addEventListener('click', hideFeedbackModal);
+
+    feedbackGoToStep(1);
 
     sendButton.addEventListener('click', handleSendMessage);
     messageInput.addEventListener('keydown', (e) => {
@@ -1349,6 +1500,7 @@ $jta_feedback_questions = [
 </div>
 
 <!-- FEEDBACK MODAL -->
+<?php $jta_total_steps = count($jta_feedback_questions) + 1; ?>
 <div id="feedback-modal-overlay">
   <div id="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
     <button type="button" id="feedback-close-btn" class="feedback-close" aria-label="Close feedback survey">&times;</button>
@@ -1356,14 +1508,23 @@ $jta_feedback_questions = [
     <p class="feedback-subtitle">Your JTA download is on its way. How was the experience?</p>
 
     <form id="feedback-form" novalidate>
+      <div class="feedback-progress" aria-hidden="true">
+        <span class="feedback-progress-text">
+          Question <span id="feedback-step-current">1</span> of <span id="feedback-step-total"><?php echo $jta_total_steps; ?></span>
+        </span>
+        <div class="feedback-progress-bar">
+          <div class="feedback-progress-fill" id="feedback-progress-fill"></div>
+        </div>
+      </div>
+
       <?php foreach ($jta_feedback_questions as $index => $question_text): ?>
         <?php $q_num = $index + 1; ?>
-        <fieldset class="feedback-question">
+        <fieldset class="feedback-step" data-step="<?php echo $q_num; ?>">
           <legend class="feedback-question-text"><?php echo $q_num; ?>. <?php echo htmlspecialchars($question_text, ENT_QUOTES, 'UTF-8'); ?></legend>
           <div class="rating-scale">
             <?php for ($v = 1; $v <= 5; $v++): ?>
               <label class="rating-option">
-                <input type="radio" name="q<?php echo $q_num; ?>" value="<?php echo $v; ?>" required>
+                <input type="radio" name="q<?php echo $q_num; ?>" value="<?php echo $v; ?>">
                 <span class="rating-number"><?php echo $v; ?></span>
               </label>
             <?php endfor; ?>
@@ -1375,21 +1536,33 @@ $jta_feedback_questions = [
         </fieldset>
       <?php endforeach; ?>
 
-      <div class="feedback-open-question">
-        <label for="feedback-open-response">What would make this tool more useful for you?</label>
+      <div class="feedback-step" data-step="<?php echo $jta_total_steps; ?>">
+        <label for="feedback-open-response" class="feedback-question-text">What would make this tool more useful for you?</label>
         <textarea
           id="feedback-open-response"
           name="open-response"
-          rows="3"
+          rows="4"
           placeholder="(Optional) Anything you'd add, change, or remove?"
         ></textarea>
       </div>
 
       <div class="feedback-actions">
-        <button type="button" id="feedback-skip-btn">Skip</button>
-        <button type="submit" id="feedback-submit-btn">Submit Feedback</button>
+        <button type="button" id="feedback-prev-btn" hidden>Previous</button>
+        <div class="feedback-actions-right">
+          <button type="button" id="feedback-next-btn" disabled>Next</button>
+          <button type="submit" id="feedback-submit-btn" hidden disabled>Submit Feedback</button>
+        </div>
       </div>
     </form>
+
+    <div id="feedback-thank-you" class="feedback-thank-you" hidden>
+      <div class="feedback-thank-you-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12.5l4.5 4.5L19 7" stroke="#11304b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p>Thank you for helping to improve this tool!</p>
+    </div>
   </div>
 </div>
 </body>
