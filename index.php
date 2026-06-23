@@ -1,9 +1,29 @@
+<?php
+/**
+ * JTA AI Tool — Drupal template
+ *
+ * The only configurable value is the API base URL, exposed below so it can
+ * be overridden per environment (e.g. staging vs. production) without
+ * editing the inline JavaScript.
+ */
+
+$jta_api_base_url = 'https://earthcenterportal.azurewebsites.net/api/Jta';
+$jta_page_title   = 'JTA AI Tool';
+
+$jta_feedback_questions = [
+  'The JTA tool was easy to use.',
+  'The clarifying questions the tool asked were relevant to the role I was building a JTA for.',
+  'The Knowledge, Skills, and Abilities the tool generated were accurate and useful.',
+  'I would feel comfortable sharing this JTA with my advisory board or BILT.',
+  'I would use this tool again to build another JTA.',
+];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JTA AI Tool</title>
+<title><?php echo htmlspecialchars($jta_page_title, ENT_QUOTES, 'UTF-8'); ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -26,7 +46,7 @@
     min-height: 100vh;
   }
 
-  /* ── HERO SECTION ── */
+  /* HERO SECTION */
   .hero-section {
     background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--light-blue) 100%), var(--light-blue);
     padding: 72px 40px 48px;
@@ -62,7 +82,7 @@
     line-height: 1.2;
   }
 
-  /* ── CHAT SECTION ── */
+  /* CHAT SECTION */
   .chat-section {
     padding: 0 40px 72px;
     background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--light-blue) 100%), var(--light-blue);
@@ -176,7 +196,7 @@
     30% { transform: translateY(-6px); background: var(--gold); }
   }
 
-  /* ── Pill Input ── */
+  /* Pill Input */
   .input-pill {
     background: var(--white);
     border: 1px solid var(--border);
@@ -215,7 +235,7 @@
   #send-button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   #send-button svg { width: 28px; height: 28px; }
 
-  /* ── Download strip ── */
+  /* Download strip */
   .download-strip {
     max-width: 1300px;
     margin: 24px auto 0;
@@ -262,7 +282,7 @@
   #excel-button:hover { opacity: 0.85; transform: translateY(-1px); }
   #excel-button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
-  /* ── CONTENT SECTION ── */
+  /* CONTENT SECTION */
   .content-section {
     padding: 0 40px 120px;
     background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--light-blue) 100%), var(--light-blue);
@@ -272,7 +292,7 @@
     align-items: center;
   }
 
-  /* ── HOW IT WORKS ── */
+  /* HOW IT WORKS */
   .how-it-works {
     max-width: 1300px;
     width: 100%;
@@ -332,7 +352,7 @@
     line-height: 1.4;
   }
 
-  /* ── TIPS ── */
+  /* TIPS */
   .tips-row {
     display: flex;
     gap: 32px;
@@ -363,7 +383,7 @@
     line-height: 1.4;
   }
 
-  /* ── FAQ ── */
+  /* FAQ */
   .faq-section {
     max-width: 1300px;
     width: 100%;
@@ -434,7 +454,7 @@
     line-height: 1.5;
   }
 
-  /* ── FOOTER CTA ── */
+  /* FOOTER CTA */
   .footer-cta {
     background: var(--dark-blue);
     padding: 60px clamp(24px, 8vw, 120px);
@@ -473,7 +493,7 @@
   .contact-btn:hover { opacity: 0.85; transform: translateY(-1px); }
   .contact-btn img { width: 28px; height: 28px; object-fit: contain; }
 
-  /* ── Spinner ── */
+  /* Spinner */
   .spinner {
     width: 18px; height: 18px;
     border: 2px solid rgba(255,255,255,0.3);
@@ -489,7 +509,7 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Responsive ── */
+  /* Responsive */
   @media (max-width: 960px) {
     .steps-grid { grid-template-columns: 1fr; }
   }
@@ -502,7 +522,7 @@
     .footer-cta { flex-wrap: wrap; gap: 24px; justify-content: center; text-align: center; }
   }
 
-  /* ── SESSION EXPIRY MODAL ── */
+  /* SESSION EXPIRY MODAL */
   #session-modal-overlay {
     display: none;
     position: fixed;
@@ -565,7 +585,7 @@
     background: var(--mid-blue);
   }
 
-  /* ── FEEDBACK MODAL ── */
+  /* FEEDBACK MODAL */
   #feedback-modal-overlay {
     display: none;
     position: fixed;
@@ -993,7 +1013,7 @@
 </footer>
 
 <script>
-  // ── FAQ Accordion ──
+  // FAQ Accordion
   function toggleFaq(btn) {
     const answer = btn.nextElementSibling;
     const toggle = btn.querySelector('.faq-toggle');
@@ -1012,8 +1032,8 @@
     }
   }
 
-  // ── API / Chat Logic ──
-  const API_BASE_URL = 'https://earthcenterportal.azurewebsites.net/api/Jta';
+  // API / Chat Logic
+  const API_BASE_URL = <?php echo json_encode($jta_api_base_url, JSON_UNESCAPED_SLASHES); ?>;
   const STORAGE_KEY_SESSION = 'jta_session_id';
   const STORAGE_KEY_HISTORY = 'jta_chat_history';
 
@@ -1210,13 +1230,13 @@
     }
   }
 
-  // ── Auto-resize textarea ──
+  // Auto-resize textarea
   messageInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 120) + 'px';
   });
 
-  // ── Session Expiry ──
+  // Session Expiry
   const SESSION_CLEAR_MS = 60 * 1000; // 60 sec after warning → clear
 
   let clearTimer   = null;
@@ -1258,7 +1278,7 @@
   // Clear session silently when user leaves the page
   window.addEventListener('pagehide', clearSession);
 
-  // ── Feedback Modal ──
+  // Feedback Modal
   let feedbackOverlay = null;
   let feedbackForm    = null;
 
@@ -1288,7 +1308,7 @@
     hideFeedbackModal();
   }
 
-  // ── Event Listeners ──
+  // Event Listeners
   document.addEventListener('DOMContentLoaded', () => {
     modalOverlay = document.getElementById('session-modal-overlay');
     const continueBtn = document.getElementById('session-continue-btn');
@@ -1336,80 +1356,24 @@
     <p class="feedback-subtitle">Your JTA download is on its way. How was the experience?</p>
 
     <form id="feedback-form" novalidate>
-      <fieldset class="feedback-question">
-        <legend class="feedback-question-text">1. The JTA tool was easy to use.</legend>
-        <div class="rating-scale">
-          <label class="rating-option"><input type="radio" name="q1" value="1" required><span class="rating-number">1</span></label>
-          <label class="rating-option"><input type="radio" name="q1" value="2" required><span class="rating-number">2</span></label>
-          <label class="rating-option"><input type="radio" name="q1" value="3" required><span class="rating-number">3</span></label>
-          <label class="rating-option"><input type="radio" name="q1" value="4" required><span class="rating-number">4</span></label>
-          <label class="rating-option"><input type="radio" name="q1" value="5" required><span class="rating-number">5</span></label>
-        </div>
-        <div class="rating-anchors">
-          <span>Strongly Disagree</span>
-          <span>Strongly Agree</span>
-        </div>
-      </fieldset>
-
-      <fieldset class="feedback-question">
-        <legend class="feedback-question-text">2. The clarifying questions the tool asked were relevant to the role I was building a JTA for.</legend>
-        <div class="rating-scale">
-          <label class="rating-option"><input type="radio" name="q2" value="1" required><span class="rating-number">1</span></label>
-          <label class="rating-option"><input type="radio" name="q2" value="2" required><span class="rating-number">2</span></label>
-          <label class="rating-option"><input type="radio" name="q2" value="3" required><span class="rating-number">3</span></label>
-          <label class="rating-option"><input type="radio" name="q2" value="4" required><span class="rating-number">4</span></label>
-          <label class="rating-option"><input type="radio" name="q2" value="5" required><span class="rating-number">5</span></label>
-        </div>
-        <div class="rating-anchors">
-          <span>Strongly Disagree</span>
-          <span>Strongly Agree</span>
-        </div>
-      </fieldset>
-
-      <fieldset class="feedback-question">
-        <legend class="feedback-question-text">3. The Knowledge, Skills, and Abilities the tool generated were accurate and useful.</legend>
-        <div class="rating-scale">
-          <label class="rating-option"><input type="radio" name="q3" value="1" required><span class="rating-number">1</span></label>
-          <label class="rating-option"><input type="radio" name="q3" value="2" required><span class="rating-number">2</span></label>
-          <label class="rating-option"><input type="radio" name="q3" value="3" required><span class="rating-number">3</span></label>
-          <label class="rating-option"><input type="radio" name="q3" value="4" required><span class="rating-number">4</span></label>
-          <label class="rating-option"><input type="radio" name="q3" value="5" required><span class="rating-number">5</span></label>
-        </div>
-        <div class="rating-anchors">
-          <span>Strongly Disagree</span>
-          <span>Strongly Agree</span>
-        </div>
-      </fieldset>
-
-      <fieldset class="feedback-question">
-        <legend class="feedback-question-text">4. I would feel comfortable sharing this JTA with my advisory board or BILT.</legend>
-        <div class="rating-scale">
-          <label class="rating-option"><input type="radio" name="q4" value="1" required><span class="rating-number">1</span></label>
-          <label class="rating-option"><input type="radio" name="q4" value="2" required><span class="rating-number">2</span></label>
-          <label class="rating-option"><input type="radio" name="q4" value="3" required><span class="rating-number">3</span></label>
-          <label class="rating-option"><input type="radio" name="q4" value="4" required><span class="rating-number">4</span></label>
-          <label class="rating-option"><input type="radio" name="q4" value="5" required><span class="rating-number">5</span></label>
-        </div>
-        <div class="rating-anchors">
-          <span>Strongly Disagree</span>
-          <span>Strongly Agree</span>
-        </div>
-      </fieldset>
-
-      <fieldset class="feedback-question">
-        <legend class="feedback-question-text">5. I would use this tool again to build another JTA.</legend>
-        <div class="rating-scale">
-          <label class="rating-option"><input type="radio" name="q5" value="1" required><span class="rating-number">1</span></label>
-          <label class="rating-option"><input type="radio" name="q5" value="2" required><span class="rating-number">2</span></label>
-          <label class="rating-option"><input type="radio" name="q5" value="3" required><span class="rating-number">3</span></label>
-          <label class="rating-option"><input type="radio" name="q5" value="4" required><span class="rating-number">4</span></label>
-          <label class="rating-option"><input type="radio" name="q5" value="5" required><span class="rating-number">5</span></label>
-        </div>
-        <div class="rating-anchors">
-          <span>Strongly Disagree</span>
-          <span>Strongly Agree</span>
-        </div>
-      </fieldset>
+      <?php foreach ($jta_feedback_questions as $index => $question_text): ?>
+        <?php $q_num = $index + 1; ?>
+        <fieldset class="feedback-question">
+          <legend class="feedback-question-text"><?php echo $q_num; ?>. <?php echo htmlspecialchars($question_text, ENT_QUOTES, 'UTF-8'); ?></legend>
+          <div class="rating-scale">
+            <?php for ($v = 1; $v <= 5; $v++): ?>
+              <label class="rating-option">
+                <input type="radio" name="q<?php echo $q_num; ?>" value="<?php echo $v; ?>" required>
+                <span class="rating-number"><?php echo $v; ?></span>
+              </label>
+            <?php endfor; ?>
+          </div>
+          <div class="rating-anchors">
+            <span>Strongly Disagree</span>
+            <span>Strongly Agree</span>
+          </div>
+        </fieldset>
+      <?php endforeach; ?>
 
       <div class="feedback-open-question">
         <label for="feedback-open-response">What would make this tool more useful for you?</label>
