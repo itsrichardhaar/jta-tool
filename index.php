@@ -1334,11 +1334,6 @@ $jta_feedback_questions = [
     if (clearTimer) { clearTimeout(clearTimer); clearTimer = null; }
   }
 
-  // Show modal when user switches tabs/windows
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) showSessionModal();
-  });
-
   // Native browser confirmation when user tries to close/navigate away
   window.addEventListener('beforeunload', (e) => {
     showSessionModal();
@@ -1494,7 +1489,7 @@ $jta_feedback_questions = [
       </svg>
     </div>
     <h2 id="modal-title">Your session will expire soon</h2>
-    <p>Due to inactivity or navigating away, your session is about to end and your progress will be lost. Continue to keep your session active.</p>
+    <p>Navigating away will end your session and your progress will be lost. Continue to keep your session active.</p>
     <button class="modal-btn" id="session-continue-btn">Continue Session</button>
   </div>
 </div>
