@@ -522,85 +522,6 @@ $jta_feedback_questions = [
     .footer-cta { flex-wrap: wrap; gap: 24px; justify-content: center; text-align: center; }
   }
 
-  /* SESSION EXPIRY MODAL */
-  #session-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(6, 73, 131, 0.55);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-  }
-  #session-modal-overlay.visible {
-    display: flex;
-  }
-  #session-modal {
-    background: var(--white);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    padding: 40px 36px 32px;
-    max-width: 420px;
-    width: 90%;
-    text-align: center;
-  }
-  #session-modal .modal-icon {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 20px;
-    background: var(--gold);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #session-modal h2 {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--dark-blue);
-    margin-bottom: 10px;
-  }
-  #session-modal p {
-    font-size: 14px;
-    color: var(--charcoal);
-    line-height: 1.6;
-    margin-bottom: 28px;
-  }
-  #session-modal .modal-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  #session-modal .modal-btn {
-    display: inline-block;
-    background: var(--dark-blue);
-    color: var(--white);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    padding: 12px 24px;
-    border: 2px solid var(--dark-blue);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  #session-modal .modal-btn:hover {
-    background: var(--mid-blue);
-    border-color: var(--mid-blue);
-  }
-  #session-modal .modal-btn.secondary {
-    background: transparent;
-    color: var(--dark-blue);
-  }
-  #session-modal .modal-btn.secondary:hover {
-    background: var(--light-blue);
-    color: var(--dark-blue);
-    border-color: var(--dark-blue);
-  }
-
   /* FEEDBACK MODAL */
   #feedback-modal-overlay {
     display: none;
@@ -1326,12 +1247,9 @@ $jta_feedback_questions = [
   });
 
   // Session Expiry
-  // The modal only guards against closing the tab/window, and only once the
-  // chat has started. `chatStarted` arms the guard; `allowClose` disarms it
-  // after the user has chosen "Continue to Close".
-  let modalOverlay = null;
-  let chatStarted  = false;
-  let allowClose   = false;
+  // Once the chat has started, the browser's native confirmation prompt guards
+  // against accidentally closing the tab/window. `chatStarted` arms the guard.
+  let chatStarted = false;
 
   function clearSession() {
     localStorage.removeItem(STORAGE_KEY_HISTORY);
@@ -1340,7 +1258,6 @@ $jta_feedback_questions = [
     chatWindow.innerHTML = '';
     chatWindow.classList.remove('has-messages');
     messageInput.setAttribute('placeholder', INPUT_PLACEHOLDER);
-    hideSessionModal();
   }
 
   // Called once the user begins a conversation — arms the close guard.
@@ -1348,37 +1265,10 @@ $jta_feedback_questions = [
     chatStarted = true;
   }
 
-  function showSessionModal() {
-    if (!modalOverlay || modalOverlay.classList.contains('visible')) return;
-    modalOverlay.classList.add('visible');
-  }
-
-  function hideSessionModal() {
-    if (modalOverlay) modalOverlay.classList.remove('visible');
-  }
-
-  // "Continue Session" — keep the session and the close guard active.
-  function continueSession() {
-    hideSessionModal();
-  }
-
-  // "Continue to Close" — disarm the guard so the tab/window can close freely,
-  // then attempt to close it automatically. Most browsers will only honor
-  // window.close() on script-opened windows; if it's refused, the modal simply
-  // closes and the user's next close attempt goes through without a prompt.
-  function continueToClose() {
-    allowClose = true;
-    hideSessionModal();
-    window.close();
-  }
-
-  // Native browser confirmation only when the user tries to close/navigate
-  // away after starting the chat. This is the only reliable way to block a
-  // real tab/window close; the styled modal is shown behind it so it's ready
-  // if the user chooses to stay.
+  // Native browser confirmation when the user tries to close/navigate away
+  // after starting the chat. The browser shows its own "Leave site?" prompt.
   window.addEventListener('beforeunload', (e) => {
-    if (!chatStarted || allowClose) return;
-    showSessionModal();
+    if (!chatStarted) return;
     e.preventDefault();
     e.returnValue = '';
   });
@@ -1487,12 +1377,6 @@ $jta_feedback_questions = [
 
   // Event Listeners
   document.addEventListener('DOMContentLoaded', () => {
-    modalOverlay = document.getElementById('session-modal-overlay');
-    const continueBtn = document.getElementById('session-continue-btn');
-    const closeBtn = document.getElementById('session-close-btn');
-    continueBtn.addEventListener('click', continueSession);
-    closeBtn.addEventListener('click', continueToClose);
-
     feedbackOverlay   = document.getElementById('feedback-modal-overlay');
     feedbackForm      = document.getElementById('feedback-form');
     feedbackThankYou  = document.getElementById('feedback-thank-you');
@@ -1523,23 +1407,6 @@ $jta_feedback_questions = [
     initializeChat();
   });
 </script>
-
-<!-- SESSION EXPIRY MODAL -->
-<div id="session-modal-overlay">
-  <div id="session-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M12 8v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="#11304b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <h2 id="modal-title">Leave this session?</h2>
-    <p>Closing this tab or window will end your session and your progress will be lost. Would you like to keep your session active?</p>
-    <div class="modal-actions">
-      <button class="modal-btn" id="session-continue-btn">Continue Session</button>
-      <button class="modal-btn secondary" id="session-close-btn">Continue to Close</button>
-    </div>
-  </div>
-</div>
 
 <!-- FEEDBACK MODAL -->
 <?php $jta_total_steps = count($jta_feedback_questions) + 1; ?>
