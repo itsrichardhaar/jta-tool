@@ -1226,6 +1226,7 @@ $jta_feedback_questions = [
           window.URL.revokeObjectURL(url);
           a.remove();
         }, 1000);
+        markSessionEnded();
         showFeedbackModal();
       } else {
         const errorText = await response.text();
@@ -1263,6 +1264,12 @@ $jta_feedback_questions = [
   // Called once the user begins a conversation — arms the close guard.
   function markChatStarted() {
     chatStarted = true;
+  }
+
+  // Called once the JTA export has downloaded — the session's work is done, so
+  // disarm the close guard and stop prompting on tab/window close.
+  function markSessionEnded() {
+    chatStarted = false;
   }
 
   // Native browser confirmation when the user tries to close/navigate away
