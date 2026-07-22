@@ -567,6 +567,12 @@ $jta_feedback_questions = [
     line-height: 1.6;
     margin-bottom: 28px;
   }
+  #session-modal .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
   #session-modal .modal-btn {
     display: inline-block;
     background: var(--dark-blue);
@@ -575,14 +581,24 @@ $jta_feedback_questions = [
     font-size: 16px;
     font-weight: 600;
     letter-spacing: 0.5px;
-    padding: 12px 32px;
-    border: none;
+    padding: 12px 24px;
+    border: 2px solid var(--dark-blue);
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s;
   }
   #session-modal .modal-btn:hover {
     background: var(--mid-blue);
+    border-color: var(--mid-blue);
+  }
+  #session-modal .modal-btn.secondary {
+    background: transparent;
+    color: var(--dark-blue);
+  }
+  #session-modal .modal-btn.secondary:hover {
+    background: var(--light-blue);
+    color: var(--dark-blue);
+    border-color: var(--dark-blue);
   }
 
   /* FEEDBACK MODAL */
@@ -1209,6 +1225,7 @@ $jta_feedback_questions = [
     getSessionId();
     history = loadLocalHistory();
     if (history.length > 0) {
+      markChatStarted();
       history.forEach(msg => appendMessage(msg.Role, msg.Content, true));
       messageInput.removeAttribute('placeholder');
     }
@@ -1217,6 +1234,7 @@ $jta_feedback_questions = [
   async function handleSendMessage() {
     const userMessage = messageInput.value.trim();
     if (!userMessage) return;
+    markChatStarted();
     appendMessage('user', userMessage, false);
     messageInput.removeAttribute('placeholder');
     messageInput.value = '';
@@ -1308,10 +1326,12 @@ $jta_feedback_questions = [
   });
 
   // Session Expiry
-  const SESSION_CLEAR_MS = 60 * 1000; // 60 sec after warning → clear
-
-  let clearTimer   = null;
+  // The modal only guards against closing the tab/window, and only once the
+  // chat has started. `chatStarted` arms the guard; `allowClose` disarms it
+  // after the user has chosen "Continue to Close".
   let modalOverlay = null;
+  let chatStarted  = false;
+  let allowClose   = false;
 
   function clearSession() {
     localStorage.removeItem(STORAGE_KEY_HISTORY);
@@ -1323,19 +1343,41 @@ $jta_feedback_questions = [
     hideSessionModal();
   }
 
+  // Called once the user begins a conversation — arms the close guard.
+  function markChatStarted() {
+    chatStarted = true;
+  }
+
   function showSessionModal() {
     if (!modalOverlay || modalOverlay.classList.contains('visible')) return;
     modalOverlay.classList.add('visible');
-    clearTimer = setTimeout(clearSession, SESSION_CLEAR_MS);
   }
 
   function hideSessionModal() {
     if (modalOverlay) modalOverlay.classList.remove('visible');
-    if (clearTimer) { clearTimeout(clearTimer); clearTimer = null; }
   }
 
-  // Native browser confirmation when user tries to close/navigate away
+  // "Continue Session" — keep the session and the close guard active.
+  function continueSession() {
+    hideSessionModal();
+  }
+
+  // "Continue to Close" — disarm the guard so the tab/window can close freely,
+  // then attempt to close it automatically. Most browsers will only honor
+  // window.close() on script-opened windows; if it's refused, the modal simply
+  // closes and the user's next close attempt goes through without a prompt.
+  function continueToClose() {
+    allowClose = true;
+    hideSessionModal();
+    window.close();
+  }
+
+  // Native browser confirmation only when the user tries to close/navigate
+  // away after starting the chat. This is the only reliable way to block a
+  // real tab/window close; the styled modal is shown behind it so it's ready
+  // if the user chooses to stay.
   window.addEventListener('beforeunload', (e) => {
+    if (!chatStarted || allowClose) return;
     showSessionModal();
     e.preventDefault();
     e.returnValue = '';
@@ -1447,7 +1489,9 @@ $jta_feedback_questions = [
   document.addEventListener('DOMContentLoaded', () => {
     modalOverlay = document.getElementById('session-modal-overlay');
     const continueBtn = document.getElementById('session-continue-btn');
-    continueBtn.addEventListener('click', hideSessionModal);
+    const closeBtn = document.getElementById('session-close-btn');
+    continueBtn.addEventListener('click', continueSession);
+    closeBtn.addEventListener('click', continueToClose);
 
     feedbackOverlay   = document.getElementById('feedback-modal-overlay');
     feedbackForm      = document.getElementById('feedback-form');
@@ -1488,9 +1532,12 @@ $jta_feedback_questions = [
         <path d="M12 8v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="#11304b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <h2 id="modal-title">Your session will expire soon</h2>
-    <p>Navigating away will end your session and your progress will be lost. Continue to keep your session active.</p>
-    <button class="modal-btn" id="session-continue-btn">Continue Session</button>
+    <h2 id="modal-title">Leave this session?</h2>
+    <p>Closing this tab or window will end your session and your progress will be lost. Would you like to keep your session active?</p>
+    <div class="modal-actions">
+      <button class="modal-btn" id="session-continue-btn">Continue Session</button>
+      <button class="modal-btn secondary" id="session-close-btn">Continue to Close</button>
+    </div>
   </div>
 </div>
 
