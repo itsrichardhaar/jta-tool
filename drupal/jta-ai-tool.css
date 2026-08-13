@@ -779,12 +779,14 @@
   }
   .jta-tool .terms-body {
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 20px 36px;
     font-family: 'Inter', sans-serif;
     font-size: 13.5px;
     line-height: 1.6;
     color: var(--charcoal);
     flex: 1 1 auto;
+    min-height: 0;
   }
   .jta-tool .terms-body p { margin: 0 0 14px; }
   .jta-tool .terms-body h3 {
