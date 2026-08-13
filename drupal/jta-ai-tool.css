@@ -756,6 +756,13 @@
     flex-direction: column;
     overflow: hidden;
   }
+  .jta-tool #jta-terms-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
   .jta-tool #jta-terms-modal .terms-header {
     padding: 28px 36px 16px;
     border-bottom: 1px solid var(--border);
