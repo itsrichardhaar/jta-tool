@@ -403,3 +403,83 @@ document.addEventListener('DOMContentLoaded', () => {
   excelButton.addEventListener('click', handleExcelGenerate);
   initializeChat();
 });
+
+// ── Terms of Use gate ──
+(function () {
+  const TERMS_VERSION     = '2026-07-23';
+  const TERMS_STORAGE_KEY = 'jta_terms_accepted';
+  let overlay, body, checkbox, acceptBtn, declineBtn, scrollHint, mainView, declinedView, reviewBtn;
+
+  function alreadyAccepted() {
+    try { return localStorage.getItem(TERMS_STORAGE_KEY) === TERMS_VERSION; }
+    catch (e) { return false; }
+  }
+
+  function closeGate() {
+    if (overlay) overlay.setAttribute('hidden', '');
+    document.body.style.overflow = '';
+  }
+
+  function unlockCheckbox() {
+    if (checkbox) checkbox.disabled = false;
+    if (scrollHint) scrollHint.style.opacity = '0';
+  }
+
+  function onScroll() {
+    if (!body) return;
+    if (body.scrollTop + body.clientHeight >= body.scrollHeight - 24) unlockCheckbox();
+  }
+
+  function updateAccept() {
+    if (acceptBtn) acceptBtn.disabled = checkbox.disabled || !checkbox.checked;
+  }
+
+  function accept() {
+    try { localStorage.setItem(TERMS_STORAGE_KEY, TERMS_VERSION); } catch (e) {}
+    closeGate();
+  }
+
+  function decline() {
+    if (mainView)     mainView.hidden = true;
+    if (declinedView) declinedView.hidden = false;
+  }
+
+  function review() {
+    if (declinedView) declinedView.hidden = true;
+    if (mainView)     mainView.hidden = false;
+    onScroll();
+  }
+
+  function init() {
+    overlay = document.getElementById('jta-terms-overlay');
+    if (!overlay) return;
+    if (alreadyAccepted()) { closeGate(); return; }
+
+    body         = document.getElementById('jta-terms-body');
+    checkbox     = document.getElementById('jta-terms-checkbox');
+    acceptBtn    = document.getElementById('jta-terms-accept');
+    declineBtn   = document.getElementById('jta-terms-decline');
+    scrollHint   = document.getElementById('jta-terms-scroll-hint');
+    mainView     = document.getElementById('jta-terms-main');
+    declinedView = document.getElementById('jta-terms-declined');
+    reviewBtn    = document.getElementById('jta-terms-review');
+
+    document.body.style.overflow = 'hidden';
+
+    if (body) {
+      body.addEventListener('scroll', onScroll);
+      // If everything fits without scrolling, don't force a scroll that can't happen.
+      if (body.scrollHeight <= body.clientHeight + 24) unlockCheckbox();
+    }
+    if (checkbox)   checkbox.addEventListener('change', updateAccept);
+    if (acceptBtn)  acceptBtn.addEventListener('click', accept);
+    if (declineBtn) declineBtn.addEventListener('click', decline);
+    if (reviewBtn)  reviewBtn.addEventListener('click', review);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
