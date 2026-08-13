@@ -1265,6 +1265,7 @@
 
   // ── Feedback Modal — step-by-step wizard ──
   const FEEDBACK_THANK_YOU_MS = 2200;
+  const FEEDBACK_ENDPOINT = 'https://formspree.io/f/xdenzrzv';
 
   let feedbackOverlay   = null;
   let feedbackForm      = null;
@@ -1346,16 +1347,28 @@
     e.preventDefault();
     if (!feedbackAllRatingsAnswered()) return;
     const formData = new FormData(e.target);
-    const feedback = {
-      ratings: {},
-      openResponse: (formData.get('open-response') || '').toString().trim()
+    // Flat payload so each field is its own readable column in Formspree.
+    const payload = {
+      sessionId: getSessionId(),
+      submittedAt: new Date().toISOString(),
+      openResponse: (formData.get('open-response') || '').toString().trim(),
+      _subject: 'JTA Tool feedback'
     };
     for (let i = 1; i <= 5; i++) {
       const value = formData.get('q' + i);
-      feedback.ratings['q' + i] = value !== null ? Number(value) : null;
+      payload['q' + i] = value !== null ? Number(value) : null;
     }
-    // TODO: POST to feedback endpoint once available (e.g. `${API_BASE_URL}/SubmitFeedback`).
-    console.log('JTA feedback submitted:', feedback);
+
+    if (feedbackSubmitBtn) feedbackSubmitBtn.disabled = true;
+
+    fetch(FEEDBACK_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => {
+      // Non-fatal: don't trap the user if the network hiccups.
+      console.error('JTA feedback submission failed:', err);
+    });
 
     if (feedbackForm)     feedbackForm.hidden = true;
     if (feedbackThankYou) feedbackThankYou.hidden = false;
